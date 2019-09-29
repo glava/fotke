@@ -58,11 +58,13 @@ fn build_ui(application: &gtk::Application) {
     left_tree.set_headers_visible(false);
     append_text_column(&left_tree);
 
-    for i in 0..1 {
+    let v = fotke::image_paths("/Users/goran/Documents/xa2");
+
+    for i in v {
         // insert_with_values takes two slices: column indices and ToValue
         // trait objects. ToValue is implemented for strings, numeric types,
         // bool and Object descendants
-        left_store.insert_with_values(None, None, &[0], &[&format!("Hello {}", i)]);
+        left_store.insert_with_values(None, None, &[0], &[&format!("{:?}", i)]);
 
         // for _ in 0..i {
         //     left_store.insert_with_values(Some(&iter), None, &[0], &[&"I'm a child node"]);

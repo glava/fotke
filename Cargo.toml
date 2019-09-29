@@ -1,8 +1,7 @@
 [package]
-name = "gtk-rs-examples"
+name = "fotke"
 version = "0.0.1"
-authors = ["The Gtk-rs Project Developers"]
-autobins = false
+authors = ["glava"]
 
 [dependencies]
 chrono = "0.4"
@@ -26,6 +25,3 @@ gtk_3_22_30 = ["gtk_3_18", "gtk/v3_22_30", "gdk-pixbuf/v2_36", "gdk/v3_22", "gio
 gtk_3_24 = ["gtk_3_22_30", "gtk/v3_24", "atk/v2_30", "gdk-pixbuf/v2_36_8", "gdk/v3_24", "gio/v2_58", "glib/v2_58"] #for CI tools
 futures = ["futures-preview", "glib/futures", "gio/futures"]
 subclassing = ["glib/subclassing"]
-
-[[bin]]
-name = "fotke"
