@@ -65,17 +65,11 @@ fn build_ui(application: &gtk::Application) {
     append_text_column(&left_tree);
 
     let images = fotke::image_paths("/Users/goran/Documents/xa2");
-    let first = images.first().unwrap().as_path().to_str().unwrap();
-    let image = load_image(&first);
     for image in images.clone() {
         // insert_with_values takes two slices: column indices and ToValue
         // trait objects. ToValue is implemented for strings, numeric types,
         // bool and Object descendants
         left_store.insert_with_values(None, None, &[0], &[&image.as_path().to_str().unwrap()]);
-
-        // for _ in 0..i {
-        //     left_store.insert_with_values(Some(&iter), None, &[0], &[&"I'm a child node"]);
-        // }
     }
 
     // right pane
@@ -92,31 +86,21 @@ fn build_ui(application: &gtk::Application) {
     right_tree.append_column(&col);
     right_tree.set_model(Some(&right_store));
     right_tree.set_headers_visible(true);
-
     
-    right_store.insert_with_values(
-        None,
-        None,
-        &[0],
-        &[&image],
-    );
-
+    
     // selection and path manipulation
 
     let left_selection = left_tree.get_selection();
-    left_selection.connect_changed(clone!(right_tree => move |tree_selection| {
-        let f = images.first();
+    left_selection.connect_changed(clone!(right_store => move |tree_selection| {
         let (left_model, iter) = tree_selection.get_selected().expect("Couldn't get selected");
         
-     let mut path = left_model.get_path(&iter).expect("Couldn't get path");
-        println!("{:?}", left_model.get_value(&iter, 0)
-                    .get::<String>()
-                    .expect("Couldn't get string value"));
-        // get the top-level element path
-        while path.get_depth() > 1 {
-            path.up();
-        }
-        right_tree.get_selection().select_path(&path);
+        let selected_path = left_model.get_value(&iter, 0)
+                        .get::<String>()
+                        .expect("Couldn't get string value");
+        let selected_image = load_image(&selected_path);           
+            // get the top-level element path
+        right_store.insert_with_values(None,Some(0),&[0],&[&selected_image],);
+            
     }));
 
     // display the panes
