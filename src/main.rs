@@ -11,8 +11,7 @@ use gdk_pixbuf::{Pixbuf, InterpType};
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::{
-    ApplicationWindow, ButtonsType, CellRendererPixbuf, CellRendererText, DialogFlags,
-    MessageDialog, MessageType, Orientation, TreeStore, TreeView, TreeViewColumn, WindowPosition,
+    ApplicationWindow, CellRendererPixbuf, CellRendererText, Orientation, TreeStore, TreeView, TreeViewColumn, WindowPosition,
 };
 
 use std::env::args;
