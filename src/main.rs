@@ -1,7 +1,3 @@
-//! # TreeView Sample
-//!
-//! This sample demonstrates how to create a `TreeView` with either a `ListStore` or `TreeStore`.
-
 extern crate gdk_pixbuf;
 extern crate gio;
 extern crate glib;
@@ -11,27 +7,39 @@ use gdk_pixbuf::{Pixbuf, InterpType};
 use gio::prelude::*;
 use gtk::prelude::*;
 use gtk::{
-    ApplicationWindow, CellRendererPixbuf, CellRendererText, Orientation, TreeStore, TreeView, TreeViewColumn, WindowPosition,
+    ApplicationWindow, CellRendererText, Orientation, TreeStore, TreeView, TreeViewColumn, WindowPosition, Image,
 };
 
 use std::env::args;
 
-// make moving clones into closures more convenient
 macro_rules! clone {
     (@param _) => ( _ );
     (@param $x:ident) => ( $x );
     ($($n:ident),+ => move || $body:expr) => (
         {
             $( let $n = $n.clone(); )+
-            move || $body
+                move || $body
         }
     );
     ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
         {
             $( let $n = $n.clone(); )+
-            move |$(clone!(@param $p),)+| $body
+                move |$(clone!(@param $p),)+| $body
         }
     );
+}
+
+#[macro_export]
+macro_rules! upgrade_weak {
+    ($x:ident, $r:expr) => {{
+        match $x.upgrade() {
+            Some(o) => o,
+            None => return $r,
+        }
+    }};
+    ($x:ident) => {
+        upgrade_weak!($x, ())
+    };
 }
 
 fn append_text_column(tree: &TreeView) {
@@ -72,47 +80,31 @@ fn build_ui(application: &gtk::Application) {
         left_store.insert_with_values(None, None, &[0], &[&image.as_path().to_str().unwrap()]);
     }
 
-    // right pane
-    let right_tree = TreeView::new();
-    let right_column_types = [Pixbuf::static_type()];
-    let right_store = TreeStore::new(&right_column_types);
-    let renderer = CellRendererPixbuf::new();
-    let col = TreeViewColumn::new();
 
-    col.set_title("Picture");
-    col.pack_start(&renderer, false);
-
-    col.add_attribute(&renderer, "pixbuf", 0);
-    right_tree.append_column(&col);
-    right_tree.set_model(Some(&right_store));
-    right_tree.set_headers_visible(true);
-    
-    
-    // selection and path manipulation
+    let image = Image::new_from_pixbuf(Some(&load_image("/Users/goran/Documents/xa2/24A_01150.jpg").unwrap()));
 
     let left_selection = left_tree.get_selection();
-    left_selection.connect_changed(clone!(right_store => move |tree_selection| {
+    let split_pane = gtk::Box::new(Orientation::Horizontal, 10);
+
+    split_pane.set_size_request(-1, -1);
+    split_pane.add(&left_tree);
+    split_pane.add(&image);
+    window.add(&split_pane);
+    window.show_all();
+
+    left_selection.connect_changed(move |tree_selection| {
         let (left_model, iter) = tree_selection.get_selected().expect("Couldn't get selected");
         
         let selected_path = left_model.get_value(&iter, 0)
                         .get::<String>()
                         .expect("Couldn't get string value");
-        let selected_image = load_image(&selected_path);           
-            // get the top-level element path
-        right_store.insert_with_values(None,Some(0),&[0],&[&selected_image],);
-            
-    }));
-
-    // display the panes
-
-    let split_pane = gtk::Box::new(Orientation::Horizontal, 10);
-
-    split_pane.set_size_request(-1, -1);
-    split_pane.add(&left_tree);
-    split_pane.add(&right_tree);
-
-    window.add(&split_pane);
-    window.show_all();
+        let widgets = split_pane.get_children();
+        let selected_image = widgets[1].downcast_ref::<gtk::Image>().unwrap();
+        
+        let image_pix = load_image(&selected_path).unwrap();
+        selected_image.set_from_pixbuf(Some(&image_pix));
+        selected_image.show_all();
+    });
 }
 
 fn main() {
